@@ -15,7 +15,6 @@ type Repo struct {
 	Ahead         int
 	Behind        int
 	HEAD          string
-	BranchStatus  string
 	Upstream      string
 	UpstreamIcon  string
 	StashCount    int
@@ -87,17 +86,17 @@ type git struct {
 }
 
 const (
-	// DisplayBranchStatus show branch status or not
-	DisplayBranchStatus Property = "display_branch_status"
-	// DisplayStatus shows the status of the repository
-	DisplayStatus Property = "display_status"
-	// DisplayStashCount show stash count or not
-	DisplayStashCount Property = "display_stash_count"
-	// DisplayWorktreeCount show worktree count or not
-	DisplayWorktreeCount Property = "display_worktree_count"
+	// FetchBranchStatus show branch status or not
+	FetchBranchStatus Property = "fetch_branch_status"
+	// FetchStatus shows the status of the repository
+	FetchStatus Property = "fetch_status"
+	// FetchStashCount show stash count or not
+	FetchStashCount Property = "fetch_stash_count"
+	// FetchWorktreeCount show worktree count or not
+	FetchWorktreeCount Property = "fetch_worktree_count"
+
 	// DisplayUpstreamIcon show or hide the upstream icon
 	DisplayUpstreamIcon Property = "display_upstream_icon"
-
 	// BranchMaxLength truncates the length of the branch name
 	BranchMaxLength Property = "branch_max_length"
 	// BranchIcon the icon to use as branch indicator
@@ -189,7 +188,7 @@ func (g *git) shouldIgnoreRootRepository(rootDir string) bool {
 
 func (g *git) string() string {
 	statusColorsEnabled := g.props.getBool(StatusColorsEnabled, false)
-	displayStatus := g.props.getBool(DisplayStatus, false)
+	displayStatus := g.getBool(FetchStatus, DisplayStatus, false)
 	if !displayStatus {
 		g.repo.HEAD = g.getPrettyHEADName()
 	}
@@ -199,8 +198,8 @@ func (g *git) string() string {
 	if g.repo.Upstream != "" && g.props.getBool(DisplayUpstreamIcon, false) {
 		g.repo.UpstreamIcon = g.getUpstreamIcon()
 	}
-	if g.props.getBool(DisplayBranchStatus, true) {
-		g.repo.BranchStatus = g.getBranchStatus()
+	if g.getBool(FetchBranchStatus, DisplayBranchStatus, true) {
+		g.repo.HEAD = g.getBranchStatus()
 	}
 	// use template if available
 	segmentTemplate := g.props.getString(SegmentTemplate, "")
@@ -281,10 +280,10 @@ func (g *git) setGitStatus() {
 		}
 	}
 	g.repo.HEAD = g.getGitHEADContext(status["local"])
-	if g.props.getBool(DisplayStashCount, false) {
+	if g.getBool(FetchStashCount, DisplayStashCount, false) {
 		g.repo.StashCount = g.getStashContext()
 	}
-	if g.props.getBool(DisplayWorktreeCount, false) {
+	if g.getBool(FetchWorktreeCount, DisplayWorktreeCount, false) {
 		g.repo.WorktreeCount = g.getWorktreeContext()
 	}
 }

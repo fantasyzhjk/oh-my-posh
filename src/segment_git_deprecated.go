@@ -7,6 +7,15 @@ import (
 )
 
 const (
+	// DisplayBranchStatus show branch status or not
+	DisplayBranchStatus Property = "display_branch_status"
+	// DisplayStatus shows the status of the repository
+	DisplayStatus Property = "display_status"
+	// DisplayStashCount show stash count or not
+	DisplayStashCount Property = "display_stash_count"
+	// DisplayWorktreeCount show worktree count or not
+	DisplayWorktreeCount Property = "display_worktree_count"
+
 	// LocalWorkingIcon the icon to use as the local working area changes indicator
 	LocalWorkingIcon Property = "local_working_icon"
 	// LocalStagingIcon the icon to use as the local staging area changes indicator
@@ -35,6 +44,14 @@ const (
 	StatusSeparatorIcon Property = "status_separator_icon"
 )
 
+func (g *git) getBool(property, legacyProperty Property, defaultValue bool) bool {
+	_, found := g.props.values[legacyProperty]
+	if found {
+		return g.props.getBool(legacyProperty, defaultValue)
+	}
+	return g.props.getBool(property, defaultValue)
+}
+
 func (g *git) renderDeprecatedString(statusColorsEnabled bool) string {
 	if statusColorsEnabled {
 		g.SetStatusColor()
@@ -46,9 +63,6 @@ func (g *git) renderDeprecatedString(statusColorsEnabled bool) string {
 	}
 	// branchName
 	fmt.Fprintf(buffer, "%s", g.repo.HEAD)
-	if len(g.repo.BranchStatus) != 0 {
-		buffer.WriteString(g.repo.BranchStatus)
-	}
 	if g.repo.Staging.Changed {
 		fmt.Fprint(buffer, g.getStatusDetailString(g.repo.Staging, StagingColor, LocalStagingIcon, " \uF046"))
 	}
